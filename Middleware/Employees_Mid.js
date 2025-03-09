@@ -1,4 +1,4 @@
-import {addSlashes} from "slashes";
+const { addSlashes, stripSlashes } = require('slashes');
 
 async function Addemployees(req,res,next){
     let name   = addSlashes(req.body.name);
