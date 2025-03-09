@@ -2,23 +2,23 @@ const { addSlashes, stripSlashes } = require('slashes');
 
 async function Addshifts(req, res, next) {
     let shift_name = addSlashes(req.body.shift_name);
-    let start_date = addSlashes(req.body.start_date);
-    let end_date = addSlashes(req.body.end_date);
+    let start_time = addSlashes(req.body.start_time);
+    let end_time = addSlashes(req.body.end_time);
 
     // Validation: Ensure all fields are provided
-    if (!shift_name || !start_date || !end_date) {
-        return res.status(400).json({ message: 'shift_name, start_date, and end_date are required' });
+    if (!shift_name || !start_time || !end_time) {
+        return res.status(400).json({ message: 'shift_name, start_time, and end_time are required' });
     }
 
     // Corrected SQL query with three placeholders for shift_name, start_date, and end_date
-    const Query = `INSERT INTO shifts (shift_name, start_date, end_date) VALUES (?, ?, ?)`;
+    const Query = `INSERT INTO shifts (shift_name, start_time, end_time) VALUES (?, ?, ?)`;
 
     const promisePool = db_pool.promise();
     let rows = [];
 
     try {
         // Use the correct variables in the query
-        [rows] = await promisePool.query(Query, [shift_name, start_date, end_date]);
+        [rows] = await promisePool.query(Query, [shift_name, start_time, end_time]);
 
         req.success = true;
         req.insertId = rows.insertId;
@@ -48,8 +48,8 @@ async function Readshifts(req, res, next) {
         // Strip slashes if needed
         for (let idx in rows) {
             rows[idx].shift_name = stripSlashes(rows[idx].shift_name);
-            rows[idx].start_date = stripSlashes(rows[idx].start_date);
-            rows[idx].end_date = stripSlashes(rows[idx].end_date);
+            rows[idx].start_time = stripSlashes(rows[idx].start_time);
+            rows[idx].end_time = stripSlashes(rows[idx].end_time);
         }
 
         req.success = true;
@@ -80,18 +80,18 @@ async function Readshifts(req, res, next) {
 async function Updateshifts(req, res, next) {
     let idx = parseInt(req.body.idx);  // Get shift ID from the request
     let shift_name = addSlashes(req.body.shift_name);  // Get new shift name
-    let start_date = addSlashes(req.body.start_date);  // Get new start date
-    let end_date = addSlashes(req.body.end_date);  // Get new end date
+    let start_time = addSlashes(req.body.start_time);  // Get new start date
+    let end_time = addSlashes(req.body.end_time);  // Get new end date
 
-    if (!shift_name || !start_date || !end_date || isNaN(idx)) {
-        return res.status(400).json({ message: 'Shift name, start date, end date, and ID are required' });
+    if (!shift_name || !start_time || !end_time || isNaN(idx)) {
+        return res.status(400).json({ message: 'Shift name, start time, end time, and ID are required' });
     }
 
     // Build the update query
     let Query = `UPDATE shifts SET `;
     Query += `shift_name = '${shift_name}', `;
-    Query += `start_date = '${start_date}', `;
-    Query += `end_date = '${end_date}' `;
+    Query += `start_time = '${start_time}', `;
+    Query += `end_time = '${end_time}' `;
     Query += `WHERE id = ${idx}`;
 
     const promisePool = db_pool.promise();
