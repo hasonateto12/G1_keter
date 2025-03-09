@@ -1,23 +1,27 @@
 const { addSlashes, stripSlashes } = require('slashes');
 
-async function Addemployees(req,res,next){
-    let name   = addSlashes(req.body.name);
-    let shift_tybe=addSlashes(req.body.shift_tybe);
-    const Query = `INSERT INTO users (name) VALUES('${name}','${shift_tybe}')`;
-    // console.log(Query);
-    const promisePool = db_pool.promise();
-    let rows=[];
-    try {
-        [rows] = await promisePool.query(Query);
-        req.success=true;
-        req.insertId=rows.insertId;
-    } catch (err) {
-        console.log(err);
-        req.success=false;
-        req.insertId=-1;
+async function Addemployees(req, res, next) {
+    let name = addSlashes(req.body.name);
+
+    if (!name) {
+        return res.status(400).json({ message: 'Name  are required' });
     }
 
-    next();
+    const Query = `INSERT INTO employees (name) VALUES (?)`;
+    const promisePool = db_pool.promise();
+    let rows = [];
+
+    try {
+        [rows] = await promisePool.query(Query, [name]);
+        req.success = true;
+        req.insertId = rows.insertId;
+        res.status(200).json({ msg: "Employee added", Last_Id: req.insertId });
+    } catch (err) {
+        console.log(err);
+        req.success = false;
+        req.insertId = -1;
+        return res.status(500).json({ message: 'Error adding employee', error: err });
+    }
 }
 
 async function Reademployees(req,res,next){
@@ -30,7 +34,6 @@ async function Reademployees(req,res,next){
         [rows] = await promisePool.query(Query);
         for(let idx in rows){
             rows[idx].name= htmlspecialchars(stripSlashes(rows[idx].name));
-            rows[idx].shift_tybe= htmlspecialchars(stripSlashes(rows[idx].shift_tybe));
             req.employee_by_id[rows[idx].id] = rows[idx].name;
         }
         req.success=true;
@@ -46,11 +49,8 @@ async function Reademployees(req,res,next){
 async function Updateemployees(req,res,next){
     let idx    = parseInt(req.body.idx);
     let name   = addSlashes(req.body.name);
-    let shift_tybe = addSlashes(req.body.shift_tybe);
-
     let Query = `UPDATE employees SET `;
     Query += ` name = '${name}' `;
-    Query += ` shift_tybe = '${shift_tybe}' `;
     Query += ` WHERE id = ${idx} `;
     // console.log(Query);
     const promisePool = db_pool.promise();
